@@ -1,0 +1,46 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "untoken"
+version = "0.1.0"
+description = "Token compression for LLM prompts"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.10"
+dependencies = [
+    "torch>=2.1.0",
+    "transformers>=4.36.0",
+    "tokenizers>=0.15.0",
+    "pyyaml>=6.0",
+    "tqdm>=4.66.0",
+]
+
+[project.optional-dependencies]
+train = [
+    "datasets>=2.16.0",
+    "sentence-transformers>=2.2.0",
+    "accelerate>=0.25.0",
+    "wandb>=0.16.0",
+    "bert-score>=0.3.13",
+    "rouge-score>=0.1.2",
+    "scipy>=1.11.0",
+    "scikit-learn>=1.3.0",
+]
+
+dev = [
+    "pytest>=7.4.0",
+    "black>=23.0",
+    "ruff>=0.1.0",
+]
+
+[project.scripts]
+untoken = "untoken.inference:main"
+
+[tool.setuptools.packages.find]
+include = ["untoken*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"

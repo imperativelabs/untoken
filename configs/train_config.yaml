@@ -1,0 +1,64 @@
+device: cuda
+precision: bf16
+compile: true
+num_workers: 16
+seed: 42
+data_dir: /data/untoken
+checkpoint_dir: /data/untoken/checkpoints
+target_compression_ratio: 0.3
+
+optimizer: adamw
+weight_decay: 0.01
+betas: [0.9, 0.999]
+max_grad_norm: 1.0
+
+phase1:
+  epochs: 5
+  batch_size: 32
+  lr: 2.0e-5
+  warmup_ratio: 0.1
+  scheduler: one_cycle
+  gumbel_temperature: 0.8
+  freeze_encoder: true
+  losses:
+    reconstruction: 1.0
+    semantic: 0.5
+    adversarial: 0.0
+    compression_ratio: 0.3
+    gating: 0.05
+    supervised: 0.5
+
+phase2:
+  epochs: 15
+  batch_size: 32
+  grad_accum: 2
+  lr: 5.0e-6
+  disc_lr: 1.0e-4
+  scheduler: cosine_with_restarts
+  cosine_restarts: 3
+  gumbel_t_start: 1.0
+  gumbel_t_end: 0.1
+  losses:
+    reconstruction: 1.0
+    semantic: 0.5
+    adversarial: 0.1
+    compression_ratio: 0.3
+    gating: 0.05
+    supervised: 0.0
+
+phase3:
+  epochs: 5
+  batch_size: 32
+  lr: 1.0e-6
+  scheduler: linear_decay
+  gumbel_hard: true
+  losses:
+    reconstruction: 1.0
+    semantic: 0.5
+    adversarial: 0.0
+    compression_ratio: 0.3
+    gating: 0.0
+    supervised: 0.0
+
+semantic_loss_interval: 10
+discriminator_real_samples: 50000
