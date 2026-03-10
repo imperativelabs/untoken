@@ -11,6 +11,14 @@ def align_word_labels_to_tokens(word_labels: list[int], word_ids: list[int | Non
 
 
 def extract_word_labels_from_pair(original: str, compressed: str) -> list[int]:
-    orig_words = original.lower().split()
-    comp_set = set(compressed.lower().split())
-    return [1 if w.strip(".,!?;:\"'") in comp_set else 0 for w in orig_words]
+    _PUNCT = str.maketrans("", "", ".,!?;:\"'")
+    orig_words = [w.translate(_PUNCT) for w in original.lower().split()]
+    comp_words = [w.translate(_PUNCT) for w in compressed.lower().split()]
+
+    labels = [0] * len(orig_words)
+    comp_ptr = 0
+    for i, ow in enumerate(orig_words):
+        if comp_ptr < len(comp_words) and ow == comp_words[comp_ptr]:
+            labels[i] = 1
+            comp_ptr += 1
+    return labels

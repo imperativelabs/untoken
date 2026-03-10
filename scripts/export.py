@@ -17,10 +17,10 @@ def main():
     out = Path(args.output)
     out.mkdir(parents=True, exist_ok=True)
 
-    model = UntokenCompressor.from_pretrained(str(ckpt / "compressor"))
+    model = UntokenCompressor.from_pretrained(str(ckpt / "compressor"), local_files_only=True)
     model.save_pretrained(str(out))
 
-    tokenizer = AutoTokenizer.from_pretrained("distilbert-base-uncased")
+    tokenizer = AutoTokenizer.from_pretrained("distilbert-base-uncased", local_files_only=False)
     tokenizer.save_pretrained(str(out))
 
     print(f"Exported compressor-only model to {out}")

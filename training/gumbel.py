@@ -33,7 +33,10 @@ def apply_compression_mask(
         indices = binary[i].nonzero(as_tuple=True)[0]
         k = len(indices)
         if k == 0:
-            continue
+            # Guarantee at least the top-scoring token so the reconstructor
+            # never receives an all-padding sequence (which causes NaN attention).
+            indices = mask[i].argmax(keepdim=True)
+            k = 1
         compressed_ids[i, :k] = input_ids[i, indices]
         compressed_positions[i, :k] = indices
         compressed_mask[i, :k] = 1

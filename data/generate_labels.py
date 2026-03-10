@@ -5,6 +5,8 @@ from pathlib import Path
 
 from tqdm import tqdm
 
+from data.label_alignment import extract_word_labels_from_pair
+
 
 PROMPT = (
     "Remove all tokens that don't contribute essential meaning. "
@@ -25,9 +27,7 @@ def compress_with_llm(text: str, client, model: str) -> str:
 
 
 def extract_labels(original: str, compressed: str) -> list[int]:
-    orig_words = original.lower().split()
-    comp_set = set(compressed.lower().split())
-    return [1 if w.strip(".,!?;:\"'") in comp_set else 0 for w in orig_words]
+    return extract_word_labels_from_pair(original, compressed)
 
 
 def main():

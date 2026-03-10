@@ -5,9 +5,18 @@ from datasets import load_dataset
 
 
 DATASETS = {
+    # Core — confirmed parquet-based, always download
     "meetingbank": {"path": "microsoft/MeetingBank-LLMCompressed"},
     "cnn_dailymail": {"path": "abisee/cnn_dailymail", "name": "3.0.0"},
-    "gsm8k": {"path": "gsm8k", "name": "main"},
+    "gsm8k": {"path": "openai/gsm8k", "name": "main"},
+    # v2 additions — parquet-based, no dataset scripts required
+    "booksum": {"path": "kmfoda/booksum"},
+    "xsum": {"path": "EdinburghNLP/xsum"},
+    "dialogsum": {"path": "knkarthick/dialogsum"},
+    "billsum": {"path": "FiscalNote/billsum"},
+    # multi_news / samsum / scientific_papers / big_patent / wikihow / reddit_tifu
+    # are either script-based or have no reliable parquet mirror on the Hub.
+    # Their loaders in loaders.py return [] gracefully when the directory is absent.
 }
 
 
@@ -19,7 +28,11 @@ def download_all(names: list[str], output_dir: Path):
             continue
         kwargs = DATASETS[name].copy()
         print(f"Downloading {name} from {kwargs['path']}...")
-        ds = load_dataset(**kwargs)
+        try:
+            ds = load_dataset(**kwargs)
+        except Exception as e:
+            print(f"  [warn] {name} failed: {e}. Skipping.")
+            continue
         save_path = output_dir / name
         ds.save_to_disk(str(save_path))
         print(f"  Saved to {save_path}")

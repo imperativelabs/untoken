@@ -12,7 +12,7 @@ from training.losses import (
 
 def test_reconstruction_loss():
     loss_fn = ReconstructionLoss(pad_token_id=0)
-    logits = torch.randn(2, 10, 100)
+    logits = torch.randn(2, 10, 100, requires_grad=True)
     targets = torch.randint(0, 100, (2, 10))
     targets[0, -3:] = 0
     loss = loss_fn(logits, targets)
@@ -58,3 +58,27 @@ def test_supervised_compression_loss():
     labels[0, 0] = -100
     loss = loss_fn(probs, labels)
     assert loss.item() >= 0
+
+
+def test_semantic_similarity_loss_device_caching():
+    from unittest.mock import MagicMock, patch
+    from training.losses import SemanticSimilarityLoss
+
+    loss_fn = SemanticSimilarityLoss()
+
+    # Inject a pre-built mock model to skip the SentenceTransformer download
+    mock_model = MagicMock()
+    mock_model.to.return_value = mock_model
+    loss_fn._model = mock_model
+    loss_fn._device = "cpu"
+
+    # Same device: .to() should NOT be called
+    mock_model.to.reset_mock()
+    result = loss_fn._get_model("cpu")
+    mock_model.to.assert_not_called()
+    assert result is mock_model
+
+    # Different device: .to() SHOULD be called once
+    result = loss_fn._get_model("cuda")
+    mock_model.to.assert_called_once_with("cuda")
+    assert loss_fn._device == "cuda"

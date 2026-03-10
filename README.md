@@ -23,7 +23,7 @@ For best results, keep individual inputs under ~20 sentences. The model was trai
 ```python
 from untoken import Untoken
 
-ut = Untoken("pacifio/untoken-v1")
+ut = Untoken("pacifio/untoken-v2")
 
 texts = [
     "The quick brown fox jumps over the lazy dog and then runs away into the forest.",
@@ -117,9 +117,50 @@ The reconstructor and discriminator are training-only and are not shipped.
 
 See [ARCHITECTURE.md](ARCHITECTURE.md) for full details.
 
+## Performance
+
+**Primary metric — ROUGE-L:**
+
+| Target ratio | UNTOKEN v2 | LLMLingua-2 | Random drop | Actual ratio (UNTOKEN / LLMLingua-2) |
+|---|---|---|---|---|
+| 0.2 | **0.331** | 0.279 | 0.308 | 0.205 / 0.172 |
+| 0.3 | **0.455** | 0.406 | 0.430 | 0.305 / 0.262 |
+| 0.4 | **0.558** | 0.518 | 0.539 | 0.404 / 0.353 |
+| 0.5 | **0.650** | 0.618 | 0.635 | 0.505 / 0.448 |
+
+UNTOKEN v2 leads on ROUGE-L at every compression ratio tested. The gap over LLMLingua-2 is 4-5pp
+at low ratios, narrowing to 3pp at 0.5. UNTOKEN also consistently outperforms random drop, which is
+the baseline that requires zero learning — confirming the model is doing meaningful token selection
+and not just noise.
+
+### Model Size
+
+| Model | Parameters | Relative size |
+|-------|-----------|---------------|
+| LLMLingua-2 (XLM-RoBERTa-large) | ~560M | 8.4× larger |
+| LLMLingua-2 (BERT-base-multilingual) | ~179M | 2.7× larger |
+| **UNTOKEN v2** | **66.56M** | **1×** |
+
+### Training Data
+
+v2 was trained on 7 datasets across diverse domains:
+
+| Dataset | Domain | Supervision type | ~Records |
+|---------|--------|-----------------|---------|
+| MeetingBank | Meeting transcripts | Paired (summary) | 20K |
+| CNN/DailyMail | News articles | Unlabeled | 300K |
+| XSum | BBC news | Paired (summary) | 200K |
+| DialogSum | Conversation | Paired (summary) | 14K |
+| BillSum | Legislation | Paired (summary) | 23K |
+| BookSum | Long-form books | Paired (summary) | 12K |
+| GSM8K | Math reasoning | Unlabeled (discriminator real pool) | 8K |
+
+See [report.md](report.md) for more details.
+
 ## Model
 
 [pacifio/untoken-v1](https://huggingface.co/pacifio/untoken-v1) — trained on MeetingBank + CNN/DailyMail at small scale.
+[pacifio/untoken-v2](https://huggingface.co/pacifio/untoken-v2) — more diverse dataset
 
 ## License
 

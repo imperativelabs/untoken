@@ -1,0 +1,106 @@
+{
+  "0.2": {
+    "ours": {
+      "cosine_sim": 0.5642321705818176,
+      "bertscore_f1": 0.7974869608879089,
+      "rouge_l": 0.3314067623602778,
+      "compression_ratio": 0.20469814497222966
+    },
+    "random_drop": {
+      "cosine_sim": 0.589596152305603,
+      "bertscore_f1": 0.7922885417938232,
+      "rouge_l": 0.3076088701042814,
+      "compression_ratio": 0.2043519989930299
+    },
+    "stopword_removal": {
+      "cosine_sim": 0.7877553701400757,
+      "bertscore_f1": 0.8727389574050903,
+      "rouge_l": 0.3127321434228513,
+      "compression_ratio": 0.20387998174866656
+    },
+    "llmlingua2": {
+      "cosine_sim": 0.7228637933731079,
+      "bertscore_f1": 0.824972927570343,
+      "rouge_l": 0.27876414596863003,
+      "compression_ratio": 0.17183001085639663
+    }
+  },
+  "0.3": {
+    "ours": {
+      "cosine_sim": 0.6533986926078796,
+      "bertscore_f1": 0.8151599168777466,
+      "rouge_l": 0.45456604436326076,
+      "compression_ratio": 0.30460846169580064
+    },
+    "random_drop": {
+      "cosine_sim": 0.6736047267913818,
+      "bertscore_f1": 0.8022732734680176,
+      "rouge_l": 0.4295301145279283,
+      "compression_ratio": 0.30316094214641975
+    },
+    "stopword_removal": {
+      "cosine_sim": 0.8474454283714294,
+      "bertscore_f1": 0.8833361268043518,
+      "rouge_l": 0.43480778331403075,
+      "compression_ratio": 0.30290919961609264
+    },
+    "llmlingua2": {
+      "cosine_sim": 0.7823334336280823,
+      "bertscore_f1": 0.8365023136138916,
+      "rouge_l": 0.4063065847033197,
+      "compression_ratio": 0.26203250625422847
+    }
+  },
+  "0.4": {
+    "ours": {
+      "cosine_sim": 0.7195371985435486,
+      "bertscore_f1": 0.8335472345352173,
+      "rouge_l": 0.5575193590563565,
+      "compression_ratio": 0.4044558427867898
+    },
+    "random_drop": {
+      "cosine_sim": 0.739345371723175,
+      "bertscore_f1": 0.8160955905914307,
+      "rouge_l": 0.5392654819794277,
+      "compression_ratio": 0.40236323300344573
+    },
+    "stopword_removal": {
+      "cosine_sim": 0.8894846439361572,
+      "bertscore_f1": 0.8911796808242798,
+      "rouge_l": 0.541465854768926,
+      "compression_ratio": 0.4024891042686093
+    },
+    "llmlingua2": {
+      "cosine_sim": 0.8224213123321533,
+      "bertscore_f1": 0.8491406440734863,
+      "rouge_l": 0.5179583771069284,
+      "compression_ratio": 0.3530688987837689
+    }
+  },
+  "0.5": {
+    "ours": {
+      "cosine_sim": 0.779959499835968,
+      "bertscore_f1": 0.8503145575523376,
+      "rouge_l": 0.650489006158125,
+      "compression_ratio": 0.505011249744324
+    },
+    "random_drop": {
+      "cosine_sim": 0.7963566780090332,
+      "bertscore_f1": 0.8335559368133545,
+      "rouge_l": 0.6349802963923196,
+      "compression_ratio": 0.5021004767374168
+    },
+    "stopword_removal": {
+      "cosine_sim": 0.9116954207420349,
+      "bertscore_f1": 0.8977673053741455,
+      "rouge_l": 0.6343626751581966,
+      "compression_ratio": 0.5023679531758893
+    },
+    "llmlingua2": {
+      "cosine_sim": 0.8552777767181396,
+      "bertscore_f1": 0.8643390536308289,
+      "rouge_l": 0.6184731543830368,
+      "compression_ratio": 0.44827477697185203
+    }
+  }
+}

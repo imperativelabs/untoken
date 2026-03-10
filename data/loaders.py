@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import random
 from pathlib import Path
 
 import torch
@@ -131,14 +132,267 @@ def load_cnn_highlights(data_dir: Path, max_samples: int = 50000) -> list[str]:
     return results
 
 
-def build_train_dataset(phase: int, data_dir: Path, tokenizer) -> UntokenDataset:
+def build_train_dataset(phase: int, data_dir: Path, tokenizer) -> tuple[UntokenDataset, UntokenDataset]:
     data_dir = Path(data_dir)
     records = load_meetingbank_records(data_dir)
     if phase in (2, 3):
         records = records + load_cnn_records(data_dir)
-    return UntokenDataset(records, tokenizer)
+    random.shuffle(records)
+    split = int(0.95 * len(records))
+    return UntokenDataset(records[:split], tokenizer), UntokenDataset(records[split:], tokenizer)
+
+
+def _safe_load(data_dir: Path, name: str):
+    """Load a dataset from disk, returning None if not found."""
+    path = data_dir / name
+    if not path.exists():
+        return None
+    try:
+        return load_from_disk(str(path))
+    except Exception as e:
+        print(f"[{name}] skipping: {e}")
+        return None
+
+
+def load_xsum_records(data_dir: Path, max_samples: int = 200000) -> list[dict]:
+    ds = _safe_load(data_dir, "xsum")
+    if ds is None:
+        return []
+    records = []
+    for split in ds.values():
+        for row in split:
+            text = row.get("document", "")
+            summary = row.get("summary", "")
+            if not text:
+                continue
+            labels = extract_word_labels_from_pair(text, summary) if summary else None
+            records.append({"text": text, "labels": labels})
+            if len(records) >= max_samples:
+                return records
+    print(f"[xsum] loaded {len(records)} records")
+    return records
+
+
+def load_multi_news_records(data_dir: Path, max_samples: int = 50000) -> list[dict]:
+    ds = _safe_load(data_dir, "multi_news")
+    if ds is None:
+        return []
+    records = []
+    for split in ds.values():
+        for row in split:
+            text = row.get("document", "")
+            summary = row.get("summary", "")
+            if not text:
+                continue
+            labels = extract_word_labels_from_pair(text, summary) if summary else None
+            records.append({"text": text, "labels": labels})
+            if len(records) >= max_samples:
+                return records
+    print(f"[multi_news] loaded {len(records)} records")
+    return records
+
+
+def load_samsum_records(data_dir: Path) -> list[dict]:
+    ds = _safe_load(data_dir, "samsum")
+    if ds is None:
+        return []
+    records = []
+    for split in ds.values():
+        for row in split:
+            text = row.get("dialogue", "")
+            summary = row.get("summary", "")
+            if not text:
+                continue
+            labels = extract_word_labels_from_pair(text, summary) if summary else None
+            records.append({"text": text, "labels": labels})
+    print(f"[samsum] loaded {len(records)} records")
+    return records
+
+
+def load_dialogsum_records(data_dir: Path) -> list[dict]:
+    ds = _safe_load(data_dir, "dialogsum")
+    if ds is None:
+        return []
+    records = []
+    for split in ds.values():
+        for row in split:
+            text = row.get("dialogue", "")
+            summary = row.get("summary", row.get("summary1", ""))
+            if not text:
+                continue
+            labels = extract_word_labels_from_pair(text, summary) if summary else None
+            records.append({"text": text, "labels": labels})
+    print(f"[dialogsum] loaded {len(records)} records")
+    return records
+
+
+def load_scientific_papers_records(data_dir: Path, max_samples: int = 100000) -> list[dict]:
+    ds = _safe_load(data_dir, "scientific_papers")
+    if ds is None:
+        return []
+    records = []
+    for split in ds.values():
+        for row in split:
+            text = row.get("article", "")
+            summary = row.get("abstract", "")
+            if not text:
+                continue
+            labels = extract_word_labels_from_pair(text, summary) if summary else None
+            records.append({"text": text, "labels": labels})
+            if len(records) >= max_samples:
+                return records
+    print(f"[scientific_papers] loaded {len(records)} records")
+    return records
+
+
+def load_billsum_records(data_dir: Path, max_samples: int = 50000) -> list[dict]:
+    ds = _safe_load(data_dir, "billsum")
+    if ds is None:
+        return []
+    records = []
+    for split in ds.values():
+        for row in split:
+            text = row.get("text", "")
+            summary = row.get("summary", "")
+            if not text:
+                continue
+            labels = extract_word_labels_from_pair(text, summary) if summary else None
+            records.append({"text": text, "labels": labels})
+            if len(records) >= max_samples:
+                return records
+    print(f"[billsum] loaded {len(records)} records")
+    return records
+
+
+def load_big_patent_records(data_dir: Path, max_samples: int = 100000) -> list[dict]:
+    ds = _safe_load(data_dir, "big_patent")
+    if ds is None:
+        return []
+    records = []
+    for split in ds.values():
+        for row in split:
+            text = row.get("description", "")
+            summary = row.get("abstract", "")
+            if not text:
+                continue
+            labels = extract_word_labels_from_pair(text, summary) if summary else None
+            records.append({"text": text, "labels": labels})
+            if len(records) >= max_samples:
+                return records
+    print(f"[big_patent] loaded {len(records)} records")
+    return records
+
+
+def load_wikihow_records(data_dir: Path, max_samples: int = 100000) -> list[dict]:
+    ds = _safe_load(data_dir, "wikihow")
+    if ds is None:
+        return []
+    records = []
+    for split in ds.values():
+        for row in split:
+            text = row.get("text", "")
+            summary = row.get("headline", row.get("title", ""))
+            if not text:
+                continue
+            labels = extract_word_labels_from_pair(text, summary) if summary else None
+            records.append({"text": text, "labels": labels})
+            if len(records) >= max_samples:
+                return records
+    print(f"[wikihow] loaded {len(records)} records")
+    return records
+
+
+def load_reddit_tifu_records(data_dir: Path, max_samples: int = 50000) -> list[dict]:
+    ds = _safe_load(data_dir, "reddit_tifu")
+    if ds is None:
+        return []
+    records = []
+    for split in ds.values():
+        for row in split:
+            text = row.get("documents", "")
+            summary = row.get("tldr", "")
+            if not text:
+                continue
+            labels = extract_word_labels_from_pair(text, summary) if summary else None
+            records.append({"text": text, "labels": labels})
+            if len(records) >= max_samples:
+                return records
+    print(f"[reddit_tifu] loaded {len(records)} records")
+    return records
+
+
+def load_diverse_real_text(data_dir: Path, max_per_source: int = 50000) -> list[str]:
+    """Collect diverse real text samples for discriminator training."""
+    texts = []
+    texts += load_cnn_highlights(data_dir, max_per_source)
+
+    # xsum summaries
+    ds = _safe_load(data_dir, "xsum")
+    if ds is not None:
+        for split in ds.values():
+            for row in split:
+                s = row.get("summary", "").strip()
+                if s:
+                    texts.append(s)
+                if len(texts) >= 2 * max_per_source:
+                    break
+
+    # scientific abstracts
+    ds = _safe_load(data_dir, "scientific_papers")
+    if ds is not None:
+        count = 0
+        for split in ds.values():
+            for row in split:
+                s = row.get("abstract", "").strip()
+                if s:
+                    texts.append(s)
+                    count += 1
+                if count >= max_per_source:
+                    break
+
+    # billsum summaries
+    ds = _safe_load(data_dir, "billsum")
+    if ds is not None:
+        count = 0
+        for split in ds.values():
+            for row in split:
+                s = row.get("summary", "").strip()
+                if s:
+                    texts.append(s)
+                    count += 1
+                if count >= max_per_source:
+                    break
+
+    random.shuffle(texts)
+    print(f"[real_text] collected {len(texts)} diverse real text samples")
+    return texts
+
+
+def build_train_dataset_v2(phase: int, data_dir: Path, tokenizer) -> tuple[UntokenDataset, UntokenDataset]:
+    """Returns (train_dataset, val_dataset) with data from all available sources."""
+    data_dir = Path(data_dir)
+    records = []
+    records += load_meetingbank_records(data_dir)
+    records += load_cnn_records(data_dir, max_samples=200000)
+    records += load_xsum_records(data_dir)
+    records += load_multi_news_records(data_dir)
+    records += load_samsum_records(data_dir)
+    records += load_dialogsum_records(data_dir)
+    records += load_scientific_papers_records(data_dir)
+    records += load_billsum_records(data_dir)
+    records += load_big_patent_records(data_dir)
+    records += load_wikihow_records(data_dir)
+    records += load_reddit_tifu_records(data_dir)
+
+    random.shuffle(records)
+    split = int(0.95 * len(records))
+    print(f"[v2] total records={len(records)}, train={split}, val={len(records)-split}")
+    return UntokenDataset(records[:split], tokenizer), UntokenDataset(records[split:], tokenizer)
 
 
 def build_real_text_dataset(data_dir: Path, tokenizer) -> RealTextDataset:
-    highlights = load_cnn_highlights(Path(data_dir))
-    return RealTextDataset(highlights, tokenizer)
+    data_dir = Path(data_dir)
+    texts = load_diverse_real_text(data_dir)
+    if not texts:
+        texts = load_cnn_highlights(data_dir)
+    return RealTextDataset(texts, tokenizer)

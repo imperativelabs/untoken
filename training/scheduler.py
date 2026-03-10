@@ -32,6 +32,7 @@ class PhaseConfig:
     gumbel_t_end: float = 0.1
     gumbel_hard: bool = False
     freeze_encoder: bool = False
+    patience: int = 3
     losses: LossWeights = field(default_factory=LossWeights)
 
 

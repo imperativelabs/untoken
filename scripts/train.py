@@ -37,7 +37,7 @@ def seed_everything(seed: int):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--config", default="configs/train_config.yaml")
+    parser.add_argument("--config", default="configs/train_config_v2.yaml")
     parser.add_argument("--phase", type=int, default=None, help="Run only this phase (1/2/3)")
     parser.add_argument("--resume", default=None, help="Checkpoint dir to resume from")
     parser.add_argument("--quick", action="store_true", help="Smoke test: 2 batches per phase")
@@ -77,17 +77,17 @@ def main():
     phases = [args.phase] if args.phase else [1, 2, 3]
 
     if 1 in phases:
-        ds1 = build_train_dataset(1, cfg.data_dir, tokenizer)
-        trainer.train_phase1(ds1, quick=args.quick)
+        ds1, val1 = build_train_dataset(1, cfg.data_dir, tokenizer)
+        trainer.train_phase1(ds1, val_dataset=val1, quick=args.quick)
 
     if 2 in phases:
-        ds2 = build_train_dataset(2, cfg.data_dir, tokenizer)
+        ds2, val2 = build_train_dataset(2, cfg.data_dir, tokenizer)
         real_ds = build_real_text_dataset(cfg.data_dir, tokenizer)
-        trainer.train_phase2(ds2, real_ds, quick=args.quick)
+        trainer.train_phase2(ds2, real_ds, val_dataset=val2, quick=args.quick)
 
     if 3 in phases:
-        ds3 = build_train_dataset(3, cfg.data_dir, tokenizer)
-        trainer.train_phase3(ds3, quick=args.quick)
+        ds3, val3 = build_train_dataset(3, cfg.data_dir, tokenizer)
+        trainer.train_phase3(ds3, val_dataset=val3, quick=args.quick)
 
     if world_size > 1:
         dist.destroy_process_group()

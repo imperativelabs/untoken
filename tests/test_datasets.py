@@ -31,6 +31,24 @@ def test_extract_word_labels():
     assert labels == [0, 1, 1, 1, 1, 0]
 
 
+def test_extract_word_labels_repeated_function_word():
+    # "the" appears 3x in original, 1x in compressed at position 1 (cat sat the mat)
+    # Only the positionally-matched "the" (3rd word of original → index 4) should get label=1
+    orig = "the cat sat on the mat near the door"
+    comp = "cat sat the mat"
+    labels = extract_word_labels_from_pair(orig, comp)
+    assert labels[0] == 0   # first "the" not matched
+    assert labels[1] == 1   # "cat"
+    assert labels[2] == 1   # "sat"
+    assert labels[3] == 0   # "on"
+    assert labels[4] == 1   # second "the" (positionally matched)
+    assert labels[5] == 1   # "mat"
+    assert labels[6] == 0   # "near"
+    assert labels[7] == 0   # third "the" not matched
+    assert labels[8] == 0   # "door"
+    assert sum(labels) == 4  # exactly 4 words matched
+
+
 def test_untoken_dataset_shape(tokenizer):
     records = [{"text": "Hello world this is a test sentence.", "labels": [1, 0, 1, 0, 1, 0, 1]}]
     ds = UntokenDataset(records, tokenizer, max_length=64)

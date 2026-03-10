@@ -11,8 +11,8 @@ def split_into_chunks(text: str, tokenizer, max_tokens: int = 480) -> list[str]:
         toks = len(tokenizer.encode(sent, add_special_tokens=False))
         if current_len + toks > max_tokens and current:
             chunks.append(" ".join(current))
-            current = [current[-1]] if current else []
-            current_len = len(tokenizer.encode(current[0], add_special_tokens=False)) if current else 0
+            current = []
+            current_len = 0
         current.append(sent)
         current_len += toks
 
@@ -28,5 +28,12 @@ def clean_compressed_text(text: str) -> str:
 
 
 def decode_kept_tokens(input_ids: list[int], keep_mask: list[int], tokenizer) -> str:
-    kept = [tok for tok, keep in zip(input_ids, keep_mask) if keep]
+    # Pull in any continuation subwords (##) whose prefix was kept, to avoid
+    # split tokens like 503 → "50" when ##3 is dropped.
+    tokens = tokenizer.convert_ids_to_tokens(input_ids)
+    mask = list(keep_mask)
+    for i in range(1, len(tokens)):
+        if mask[i - 1] and tokens[i] is not None and tokens[i].startswith("##"):
+            mask[i] = 1
+    kept = [tok for tok, keep in zip(input_ids, mask) if keep]
     return tokenizer.decode(kept, skip_special_tokens=True)

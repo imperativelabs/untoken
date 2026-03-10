@@ -8,8 +8,10 @@ from sentence_transformers import SentenceTransformer
 import torch.nn.functional as F
 
 
-def bertscore_f1(originals: list[str], compressed: list[str]) -> float:
-    return cosine_similarity_score(originals, compressed)
+def bertscore_f1(originals: list[str], compressed: list[str], device: str = "cpu") -> float:
+    from bert_score import score as bert_score_fn
+    P, R, F1 = bert_score_fn(compressed, originals, lang="en", device=device, verbose=False)
+    return F1.mean().item()
 
 
 def rouge_l(originals: list[str], compressed: list[str]) -> float:

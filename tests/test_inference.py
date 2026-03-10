@@ -23,6 +23,26 @@ def test_compress_returns_shorter_text():
     assert all(isinstance(c, str) for c in chunks)
 
 
+def test_split_into_chunks_no_overlap():
+    from untoken.utils import split_into_chunks
+    from transformers import AutoTokenizer
+
+    tokenizer = AutoTokenizer.from_pretrained("distilbert-base-uncased")
+    # ~12 tokens each: "Alpha ... alpha." etc. Use max_tokens=20 so only 1 sentence fits per chunk.
+    s1 = "Alpha beta gamma delta epsilon zeta eta theta iota kappa."
+    s2 = "Beta gamma delta epsilon zeta eta theta iota kappa lambda."
+    s3 = "Gamma delta epsilon zeta eta theta iota kappa lambda mu."
+    text = f"{s1} {s2} {s3}"
+
+    chunks = split_into_chunks(text, tokenizer, max_tokens=14)
+    # Each sentence alone exceeds or roughly equals max_tokens=14, so we get multiple chunks
+    assert len(chunks) >= 2
+    # Verify sentences are not duplicated across chunks
+    for marker in ["Alpha", "Beta", "Gamma"]:
+        occurrences = sum(1 for c in chunks if marker in c)
+        assert occurrences <= 1, f"'{marker}' appears in multiple chunks"
+
+
 def test_decode_kept_tokens():
     from untoken.utils import decode_kept_tokens
     from transformers import AutoTokenizer
