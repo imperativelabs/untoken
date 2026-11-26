@@ -53,6 +53,19 @@ def log_samples(ut, tokenizer, data_dir: Path, ratios: list[float], n: int = 5):
     except Exception:
         print("[samples] LLMLingua-2 not available — showing UNTOKEN only.")
 
+    # Load ctxprune if installed (pip install ctxprune). Same constructor arguments as LLMLingua-2
+    # above, so the two rows are comparable; it is printed only, not added to the benchmark.
+    ctxprune = None
+    try:
+        from ctxprune.compat import PromptCompressor as CtxPromptCompressor
+        ctxprune = CtxPromptCompressor(
+            "microsoft/llmlingua-2-bert-base-multilingual-cased-meetingbank",
+            use_llmlingua2=True,
+        )
+        print("[samples] ctxprune loaded for side-by-side comparison.")
+    except Exception:
+        print("[samples] ctxprune not available — skipping the ctxprune column.")
+
     print(f"\n{'=' * 80}")
     print(f"  QUALITATIVE SAMPLE LOG  |  source={source}  |  n={len(texts)}")
     print(f"{'=' * 80}")
@@ -87,6 +100,16 @@ def log_samples(ut, tokenizer, data_dir: Path, ratios: list[float], n: int = 5):
                     print(f"  {ll_out[:500]}{'...' if len(ll_out) > 500 else ''}")
                 except Exception as e:
                     print(f"\n  LLMLINGUA-2: [failed: {e}]")
+
+            if ctxprune:
+                try:
+                    cp_out = ctxprune.compress_prompt(orig, rate=ratio)["compressed_prompt"]
+                    cp_tokens = _tok_count(tokenizer, cp_out)
+                    cp_ratio = cp_tokens / max(orig_tokens, 1)
+                    print(f"\n  CTXPRUNE  (actual ratio={cp_ratio:.3f}, {orig_tokens}→{cp_tokens} tokens):")
+                    print(f"  {cp_out[:500]}{'...' if len(cp_out) > 500 else ''}")
+                except Exception as e:
+                    print(f"\n  CTXPRUNE: [failed: {e}]")
 
         print(f"\n{DIVIDER}")
 
